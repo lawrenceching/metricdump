@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prometheus Dashboard</title>
+</head>
+<body>
+<h1 id="title"></h1>
+<div id="main" style="width: 80vw;height:60vh;"></div>
+<button id="download">Download</button>
+
+<script type="module">
+
+    import { title } from "./i18n.mjs"
+    import initEcharts from "./index.mjs"
+    document.getElementById('title').textContent = title['zh-CN'];
+
+    initEcharts();
+
+    function saveAs(uri, filename) {
+        var link = document.createElement('a');
+        if (typeof link.download === 'string') {
+            document.body.appendChild(link); // Firefox requires the link to be in the body
+            link.download = filename;
+            link.href = uri;
+            link.click();
+            document.body.removeChild(link); // remove the link when done
+        } else {
+            location.replace(uri);
+        }
+    }
+
+    document.getElementById('download').onclick = function() {
+        const canvas = document.querySelector('div#main canvas')
+        const image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        saveAs(image, 'tmp.png')
+    }
+</script>
+</body>
+</html>
