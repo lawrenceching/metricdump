@@ -1,9 +1,15 @@
-import echarts from "echarts";
+import echarts from 'echarts';
 
-function renderChart(ele, dataSet) {
+function renderChart(ele, options, dataSet) {
+
+    const {
+        title,
+        subtitle,
+        renderer
+    } = options;
 
     const chart = echarts.init(ele, null, {
-        renderer: 'svg'
+        renderer: renderer || 'svg'
     });
 
     chart.setOption({
@@ -15,7 +21,12 @@ function renderChart(ele, dataSet) {
         },
         title: {
             left: 'center',
-            text: 'gc_seconds'
+            text: title,
+            textStyle: {
+                fontSize: 24,
+                fontWeight: 'bold',
+            },
+            subtext: subtitle
         },
         backgroundColor: "#FFF",
         animation: false,

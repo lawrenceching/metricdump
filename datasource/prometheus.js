@@ -13,35 +13,39 @@ function getName(result) {
     return labels.join(" ")
 }
 
+async function queryRange (promQL, startInSeconds, endInSeconds) {
+    const url = new URL('http://localhost:9090/api/v1/query_range');
+    url.searchParams.append('query', promQL)
+    url.searchParams.append('start', startInSeconds)
+    url.searchParams.append('end', endInSeconds)
+    url.searchParams.append('step', `14`)
+    log(`> ${url.href}`)
+    const resp = await fetch(url.href)
+    const json = await resp.json();
+    log(`< ${resp.status} : ${JSON.stringify(json, null, 4)}`)
+
+    return json.data.result.map(result => {
+        const name = getName(result)
+        const data = result.values.map(d => {
+            return [d[0] * 1000, d[1] * 1000];
+        });
+
+        return {
+            name,
+            values: data
+        }
+    });
+}
+
+async function queryRangeSince (promQL, durationInSeconds) {
+    const endInSeconds = Date.now() / 1000;
+    const startInSeconds = endInSeconds - durationInSeconds;
+    return await queryRange(promQL, startInSeconds, endInSeconds);
+}
+
 const PrometheusClient = {
-    queryRange: async function (promQL, durationInSeconds) {
-
-        const nowInEpochSecond = Date.now() / 1000;
-
-        const url = new URL('http://localhost:9090/api/v1/query_range');
-        url.searchParams.append('query', promQL)
-        url.searchParams.append('start', `${nowInEpochSecond - durationInSeconds}`)
-        url.searchParams.append('end', `${nowInEpochSecond}`)
-        url.searchParams.append('step', `14`)
-        log(`> ${url.href}`)
-        const resp = await fetch(url.href)
-        log(`< ${resp.status} : ${JSON.stringify(resp, null, 4)}`)
-        const json = await resp.json();
-
-        const series = json.data.result.map(result => {
-            const name = getName(result)
-            const data = result.values.map(d => {
-                return [d[0] * 1000, d[1] * 1000];
-            });
-
-            return {
-                name,
-                values: data
-            }
-        })
-
-        return series;
-    }
+    queryRange,
+    queryRangeSince,
 }
 
 export default PrometheusClient
