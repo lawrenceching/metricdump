@@ -1,6 +1,8 @@
-# promethues-snapshot
+# prometheus-snapshot
 
 ### Get Started
+
+![Example - Node CPU Usage](https://raw.githubusercontent.com/lawrenceching/prometheus-snapshot/main/example/Node%20CPU%20Usage.svg)
 
 ##### Required
 Node.js 16
