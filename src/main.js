@@ -10,7 +10,7 @@ import yaml from 'js-yaml'
 import {join} from "path";
 const log = debug('main')
 const info = debug('info');
-debug.enable('info');
+debug.enable('info,' + process.env['DEBUG']);
 const program = commander.program;
 
 
