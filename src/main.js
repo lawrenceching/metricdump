@@ -2,7 +2,7 @@ import debug from 'debug'
 import renderChart from './core/chart.mjs';
 import canvas from 'canvas'
 import {JSDOM} from 'jsdom';
-import PrometheusClient from './datasource/prometheus.js'
+import Prometheus from './datasource/prometheus.js'
 import fs from 'fs';
 import commander from 'commander'
 import assert from 'assert'
@@ -19,7 +19,7 @@ program.version('0.0.1')
     .option('--width <px>', 'The width of the generated SVG or PNG file', '1024')
     .option('--height <px>', 'The height of the generated SVG or PNG file', '820')
     .option('--title <title>', 'The title of graph')
-    .option('--output <title>', 'The output SVG/PNG file path', './output.svg')
+    .option('--output <title>', 'The output SVG/PNG file path', './output')
     .option('--renderer <title>', 'The renderer, svg or canvas', 'canvas')
     .option('--step <step>', 'The step for query Prometheus metric')
     .option('--promql <query>', 'The PromQL to query')
@@ -32,8 +32,10 @@ const options = program.opts();
 
 const {start, end, since, prometheus, width, height, title, promql, output, renderer, step } = options;
 
-const metrics = yaml.load(fs.readFileSync('./example/metrics.yaml'), 'utf8');
+log(`Execute program with options: ${JSON.stringify(options, null, 4)}`)
 
+const metrics = yaml.load(fs.readFileSync('./example/metrics.yaml'), 'utf8');
+const prometheusClient = new Prometheus(prometheus);
 function createRootElement(renderer) {
     if (renderer === 'svg') {
         const root = document.createElement('div');
@@ -66,18 +68,18 @@ for (let metric of metrics) {
     const root = createRootElement(renderer);
     const _promql = metric.query || promql
 
-    log(`Query Prometheus: ${promql}`)
+    log(`Query Prometheus: ${_promql}`)
     let data;
-    if(since !== null) {
-       data = await PrometheusClient.queryRangeSince(_promql, since, {
+    if(since !== null && since!==undefined && since > 0) {
+       data = await prometheusClient.queryRangeSince(_promql, since, {
            step: step || calculateStep()
        })
     } else {
-        data = await PrometheusClient.queryRange(_promql, start, end, {
+        log(`queyrRange: _promql=${_promql}, start=${start} end=${end}`)
+        data = await prometheusClient.queryRange(_promql, start, end, {
             step: step || calculateStep()
         })
     }
-
 
     log(`Got data from Prometheus: ${data.length} series are found`);
 
