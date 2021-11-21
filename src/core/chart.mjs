@@ -44,12 +44,17 @@ function renderChart(ele, options, dataSet) {
         backgroundColor: "#FFF",
         animation: false,
         legend: {
-            orient: 'horizontal',
-            top: 'bottom',
-            left: '10%',
+            left: 'right',
+            top: 'center',
+            orient: 'vertical',
+            icon: 'circle',
             data: dataSet.map(d => d.name)
         },
         grid: {
+            left: '3%',
+            right: '15%',
+            bottom: '3%',
+            containLabel: true,
             show: false,
             backgroundColor: '#fff'
         },
@@ -93,7 +98,6 @@ function renderChart(ele, options, dataSet) {
                 type: 'line',
                 smooth: true,
                 symbol: 'none',
-                areaStyle: {},
                 xAxis: {
                     type: 'time',
                     boundaryGap: false
