@@ -24,4 +24,5 @@ jobs:
     - name: Docker Push
       run: |
         docker push lawrenceching/prometheus-snapshot:$(date '+%Y-%m-%d')
+        docker tag lawrenceching/prometheus-snapshot:$(date '+%Y-%m-%d') lawrenceching/prometheus-snapshot:latest
         docker push lawrenceching/prometheus-snapshot:latest
