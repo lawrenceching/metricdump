@@ -1,6 +1,8 @@
-- query: rate(go_gc_duration_seconds_count[1m])
-  title: Average GC Duration per Second
+- query: rate(node_cpu_seconds_total[10m])
+  title: Node CPU Usage
   unit: Percent (0.0-1.0)
-- query: sum(rate(prometheus_engine_query_duration_seconds_sum[5m]))/sum(rate(prometheus_engine_query_duration_seconds_count[5m]))
-  title: Prometheus Average Query Duration
+- query: rate(caddy_http_requests_total[10m])
+  title: Caddy HTTP Requests
+- query: sum(rate(prometheus_notifications_latency_seconds_sum[5m]))/sum(rate(prometheus_notifications_latency_seconds_count[5m]))
+  title: Prometheus Notification Latency
   unit: second
