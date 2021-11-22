@@ -1,4 +1,4 @@
-import echarts from 'echarts';
+import * as echarts from 'echarts';
 import {JSDOM} from "jsdom";
 import { DateTime } from "luxon";
 
@@ -67,17 +67,16 @@ function renderChart(ele, options, dataSet) {
         xAxis: {
             type: 'time',
             boundaryGap: false,
+            splitNumber: 5,
             axisLabel: {
                 formatter: function(value, index) {
                     return DateTime.fromMillis(value).toFormat('yyyy-MM-dd\nMM:hh:ss')
-                },
-                interval: 'auto'
-            },
-
+                }
+            }
         },
         yAxis: {
             type: 'value',
-            boundaryGap: [0, '100%'],
+            boundaryGap: ['20%', '20%'],
             axisLabel: {
                 formatter: function (value, index) {
                     switch(unit) {

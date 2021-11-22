@@ -61,11 +61,3 @@ docker cp $ID:/tmp/metrics ./
 # Remove container
 docker container rm $ID
 ```
-
-### Development
-
-##### Build
-
-```
-
-```
