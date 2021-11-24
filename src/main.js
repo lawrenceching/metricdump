@@ -1,5 +1,5 @@
 import debug from 'debug'
-import { assertThat, isNumber } from './core/asserts.mjs'
+import {assertThat, isNumber} from './core/asserts.mjs'
 import renderChart from './core/chart.mjs';
 import canvas from 'canvas'
 import Prometheus from './datasource/prometheus.js'
@@ -8,11 +8,12 @@ import commander from 'commander'
 import assert from 'assert'
 import yaml from 'js-yaml'
 import {join} from "path";
+import renderByChromium from './puppeteer.js';
+
 const log = debug('main')
 const info = debug('info');
 debug.enable('info,' + process.env['DEBUG']);
 const program = commander.program;
-
 
 program.version('0.0.1')
     .description('A tool to take snapshot of Prometheus metric and save as SVG/PNG')
@@ -21,12 +22,14 @@ program.version('0.0.1')
     .option('--end <time>', 'Record metric end at the given time')
     .option('--width <px>', 'The width of the generated SVG or PNG file', '1024')
     .option('--height <px>', 'The height of the generated SVG or PNG file', '600')
+    .option('--backend <title>', 'Backend of renderer. Supports node-canvas or chromium')
     .option('--title <title>', 'The title of graph')
     .option('--output <title>', 'The output SVG/PNG file path', './output')
     .option('--renderer <title>', 'The renderer, svg or canvas', 'canvas')
     .option('--step <step>', 'The step for query Prometheus metric')
     .option('--promql <query>', 'The PromQL to query')
     .option('--unit <unit>', 'The unit for the metric.')
+    .option('--headless <headless>', 'Launch Chromium in headless mode or not')
     .option('--metrics <yaml>', 'Path to the metric file which defined a series of metrics need to be recorded')
     .option('--prometheus <url>', 'The url to Prometheus', 'http://localhost:9090');
 
@@ -35,24 +38,25 @@ program.parse(process.argv);
 
 const options = program.opts();
 
-const {start, end, prometheus, width, height, promql, output, renderer, step } = options;
+const {start, end, prometheus, width, height, promql, output, renderer, step, headless} = options;
 const since = options.since !== undefined ? toSeconds(options.since) : undefined;
 const title = options.title || 'Prometheus Metric';
+const backend = options.backend || 'chromium';
 const metricYaml = options.metrics
 
 log(`Execute program with options: ${JSON.stringify(options, null, 4)}`)
 
-if(promql === undefined && metricYaml === undefined) {
+if (promql === undefined && metricYaml === undefined) {
     assert.fail("No metric specified. You should set either --promql or --metrics. Use --help to see more detail.")
 }
 
 let metrics;
-if(promql !== undefined) {
+if (promql !== undefined) {
     const unit = options.unit || 'default';
     metrics = [{
-    // - query: rate(node_cpu_seconds_total[10m])
-    // title: Node CPU Usage
-    // unit: Percent (0.0-1.0)
+        // - query: rate(node_cpu_seconds_total[10m])
+        // title: Node CPU Usage
+        // unit: Percent (0.0-1.0)
         query: promql,
         title: title,
         unit
@@ -63,6 +67,7 @@ if(promql !== undefined) {
 
 
 const prometheusClient = new Prometheus(prometheus);
+
 function createRootElement(renderer) {
     if (renderer === 'svg') {
         const root = document.createElement('div');
@@ -79,7 +84,7 @@ function createRootElement(renderer) {
 function calculateStep() {
     let _start = start;
     let _end = end;
-    if(since !== null) {
+    if (since !== null) {
         _end = Date.now() / 1000;
         _start = _end - since;
     }
@@ -92,49 +97,82 @@ function calculateStep() {
 
 for (let metric of metrics) {
 
-    const root = createRootElement(renderer);
     const _promql = metric.query || promql
 
     log(`Query Prometheus: ${_promql}`)
-    let data;
-    if(since!==undefined && since > 0) {
-        data = await prometheusClient.queryRangeSince(_promql, since, {
+    let dataSet;
+    if (since !== undefined && since > 0) {
+        dataSet = await prometheusClient.queryRangeSince(_promql, since, {
             step: step || calculateStep()
         })
     } else {
         log(`queryRange: _promql=${_promql}, start=${start} end=${end}`)
-        data = await prometheusClient.queryRange(_promql, start, end, {
+        dataSet = await prometheusClient.queryRange(_promql, start, end, {
             step: step || calculateStep()
         })
     }
 
-    log(`Got data from Prometheus: ${data.length} series are found`);
+    log(`Got data from Prometheus: ${dataSet.length} series are found`);
 
     const _title = metric.title || title;
-    const chart = renderChart(root, {
+    const chartOptions = {
         title: _title,
         subtitle: _promql,
         renderer,
-        unit: metric.unit
-    }, data)
-    log(`Rendered chart`)
+        unit: metric.unit,
+        headless: headless !== 'false',
+        width,
+        height,
+        output
+    };
 
 
-    if (renderer === 'svg') {
-        const path = join(output, _title + '.svg');
-        fs.writeFileSync(path, root.querySelector('svg').outerHTML, 'utf-8');
-        log(`Chart is generated as SVG and save ${path}`)
-        info(path);
-    } else if (renderer === 'canvas') {
-        const path = join(output, _title + '.png')
-        fs.writeFileSync(path, chart.getDom().toBuffer());
-        log(`Chart is generated as PNG and save ${path}`)
-        info(path);
+    if (backend === 'chromium') {
+        const data = await renderByChromium(chartOptions, dataSet);
+
+        if (renderer === 'svg') {
+            const path = join(output, _title + '.svg');
+            fs.writeFileSync(path, data);
+        } else if (renderer === 'canvas') {
+            const path = join(output, _title + '.png')
+            fs.writeFileSync(path, data, 'base64');
+        } else {
+            assert.fail('Unsupported renderer: ' + renderer);
+        }
+
+    } else if (backend === 'node-canvas') {
+
+        const root = createRootElement(renderer);
+        const chart = renderChart(root, chartOptions, dataSet)
+        log(`Rendered chart`)
+        if (renderer === 'svg') {
+            const path = join(output, _title + '.svg');
+            fs.writeFileSync(path, root.querySelector('svg').outerHTML, 'utf-8');
+            log(`Chart is generated as SVG and save ${path}`)
+            info(path);
+        } else if (renderer === 'canvas') {
+            const path = join(output, _title + '.png')
+            fs.writeFileSync(path, chart.getDom().toBuffer("image/png", {
+                compressionLevel: 3,
+                filters: canvas.PNG_NO_FILTERS,
+                palette: undefined,
+                backgroundIndex: 0,
+                resolution: 1000,
+                quality: 1
+            }));
+            log(`Chart is generated as PNG and save ${path}`)
+            info(path);
+        } else {
+            assert.fail('Unsupported renderer: ' + renderer);
+        }
+
+        chart.dispose();
+
     } else {
-        assert.fail('Unsupported renderer: ' + renderer);
+        assert.fail('Unsupported backend: ' + backend);
     }
 
-    chart.dispose();
+
 }
 
 /**
@@ -146,17 +184,25 @@ function toSeconds(duration) {
     assertThat(duration).isNotBlank();
 
     const timeUnit = duration.charAt(duration.length - 1);
-    if(isNumber(timeUnit)) {
+    if (isNumber(timeUnit)) {
         return parseInt(duration);
     } else {
         assertThat(timeUnit).isOneOf(['s', 'm', 'h', 'd'])
         const time = parseInt(duration.substr(0, duration.length - 1));
 
-        switch(timeUnit) {
-            case 's': return time;
-            case 'm': return time * 60;
-            case 'h': return time * 60 * 60;
-            case 'd': return time * 60 * 60 * 24;
+        switch (timeUnit) {
+            case 's':
+                return time;
+                break;
+            case 'm':
+                return time * 60;
+                break;
+            case 'h':
+                return time * 60 * 60;
+                break;
+            case 'd':
+                return time * 60 * 60 * 24;
+                break;
             default: {
                 assert.fail(`Unsupported time unit ${timeUnit}`);
             }
