@@ -31,7 +31,7 @@ jobs:
       - run: cp package.json /tmp/prometheus-snaphost
       - run: cp -r src/* /tmp/prometheus-snaphost
       - run: cp -r node_modules/* /tmp/prometheus-snaphost
-      - run: tar -C /tmp -zcvf ./prometheus-snaphost prometheus-snaphost.tar.gz
+      - run: tar -C /tmp -zcvf prometheus-snaphost.tar.gz ./prometheus-snaphost
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.4
         with:
