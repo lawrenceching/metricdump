@@ -20,7 +20,7 @@ async function renderChart(options, dataSet) {
         headless,
         width,
         height,
-        output
+        output,
     } = options;
 
     // language=html
@@ -79,7 +79,7 @@ const options = {
             top: 'center',
             orient: 'vertical',
             icon: 'circle',
-            data: dataSet.map(d => d.name)
+            data: dataSet.length > 10 ? null : dataSet.map(d => d.name)
         },
         grid: {
             left: '3%',
