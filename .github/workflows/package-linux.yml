@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-        run: |
+      - run: |
           npm i
           mkdir /tmp/prometheus-snaphost
           cp package.json /tmp/prometheus-snaphost
