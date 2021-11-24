@@ -26,15 +26,18 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - run: npm i
-      - run: mkdir /tmp/prometheus-snaphost
-      - run: cp package.json /tmp/prometheus-snaphost
-      - run: cp -r src/* /tmp/prometheus-snaphost
-      - run: cp -r node_modules/* /tmp/prometheus-snaphost
-      - run: tar -C /tmp -zcvf prometheus-snaphost.tar.gz ./prometheus-snaphost
+        run: |
+          npm i
+          mkdir /tmp/prometheus-snaphost
+          cp package.json /tmp/prometheus-snaphost
+          cp -r src/* /tmp/prometheus-snaphost
+          cp -r node_modules/* /tmp/prometheus-snaphost
+          tar -C /tmp -zcvf prometheus-snaphost.tar.gz ./prometheus-snaphost
+          ls -l /tmp
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.4
         with:
           name: prometheus-snaphost.tar.gz
           # A file, directory or wildcard pattern that describes what to upload
           path: /tmp/prometheus-snaphost.tar.gz
+          if-no-files-found: error
