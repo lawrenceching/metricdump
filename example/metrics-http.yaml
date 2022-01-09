@@ -1,6 +1,3 @@
-- query: sum(rate(node_cpu_seconds_total[10m])) by (mode)
-  title: Node CPU Usage
-  unit: Percent (0.0-1.0)
 - query: sum(rate(caddy_http_requests_total[10m])) by (handler)
   title: Caddy HTTP Requests
 - query: sum(rate(prometheus_notifications_latency_seconds_sum[5m])) by (instance)/sum(rate(prometheus_notifications_latency_seconds_count[5m])) by (instance)

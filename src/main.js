@@ -29,6 +29,7 @@ program.version('0.0.1')
     .option('--step <step>', 'The step for query Prometheus metric')
     .option('--promql <query>', 'The PromQL to query')
     .option('--unit <unit>', 'The unit for the metric.')
+    .option('--showLegend <boolean>', 'Display legend')
     .option('--headless <headless>', 'Launch Chromium in headless mode or not')
     .option('--metrics <yaml1,yaml2,...>', 'List of paths to the metric file which defined a series of metrics need to be recorded')
     .option('--prometheus <url>', 'The url to Prometheus', 'http://localhost:9090');
@@ -42,7 +43,8 @@ const {start, end, prometheus, width, height, promql, output, renderer, step, he
 const since = options.since !== undefined ? toSeconds(options.since) : undefined;
 const title = options.title || 'Prometheus Metric';
 const backend = options.backend || 'chromium';
-const metricYaml = options.metrics
+const metricYaml = options.metrics;
+const showLegend = options.showLegend === null || options.showLegend === undefined ? true : options.showLegend === 'true';
 
 log(`Execute program with options: ${JSON.stringify(options, null, 4)}`)
 
@@ -131,7 +133,8 @@ for (let metric of metrics) {
         headless: headless !== 'false',
         width,
         height,
-        output
+        output,
+        showLegend
     };
 
 

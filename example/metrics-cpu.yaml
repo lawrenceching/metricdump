@@ -1,0 +1,3 @@
+- query: sum(rate(node_cpu_seconds_total[10m])) by (mode)
+  title: Node CPU Usage
+  unit: Percent (0.0-1.0)
