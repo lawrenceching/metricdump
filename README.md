@@ -1,4 +1,4 @@
-# prometheus-snapshot
+# metricdump
 
 A tool to save Prometheus metrics into SVC/PNG.  
 For experimental purpose, prometheus-snapshot supports to render SVG by JSDom, render PNG by node-canvas, and SVG, PNG and HTML by Chromium.

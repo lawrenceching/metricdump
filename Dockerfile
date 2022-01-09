@@ -1,4 +1,4 @@
-FROM node:16
+FROM  lawrenceching/nodejs16_chromium
 
 ENV PROMETHEUS="http://localhost:9090"
 ENV START="1637219314"
@@ -14,4 +14,4 @@ ADD example ./example
 ADD docker/entrypoint.sh ./
 
 #ENTRYPOINT /app/entrypoint.sh
-CMD ["/bin/bash", "/app/entrypoint.sh"]
+#CMD ["/bin/bash", "/app/entrypoint.sh"]

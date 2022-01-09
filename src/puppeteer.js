@@ -160,7 +160,7 @@ window.myChart.setOption(options);
 
     const browser = await puppeteer.launch({
         headless: headless || false,
-        args: [`--window-size=${width},${height}`, '--start-maximized', '--start-fullscreen'],
+        args: [`--window-size=${width},${height}`, '--start-maximized', '--start-fullscreen', ' --no-sandbox'],
         defaultViewport: {
             width: parseInt(width),
             height: parseInt(height),
