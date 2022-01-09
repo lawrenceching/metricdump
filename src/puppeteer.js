@@ -107,7 +107,7 @@ const options = {
         },
         yAxis: {
             type: 'value',
-            boundaryGap: ['20%', '20%'],
+            boundaryGap: [0, '20%'],
             axisLabel: {
                 formatter: function (value, index) {
                     switch (unit) {

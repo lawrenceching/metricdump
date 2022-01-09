@@ -8,7 +8,10 @@
   "scripts": {
     "start": "parcel",
     "dev": "parcel serve",
-    "build": "parcel build"
+    "build": "parcel build",
+    "run-chromium": "node src/main.js --width 1024 --height 600 --metrics ./example/metrics-cpu.yaml,./example/metrics-http.yaml --prometheus https://prometheus.demo.do.prometheus.io --since 7d --renderer canvas --output ./example --headless true",
+    "run-chromium-cpu": "node src/main.js --width 1024 --height 600 --metrics ./example/metrics-cpu.yaml --prometheus https://prometheus.demo.do.prometheus.io --since 1d --renderer canvas --output ./example --headless true",
+    "run-chromium-istio": "node src/main.js --width 1024 --height 600 --metrics ./example/metrics-istio.yaml --prometheus http://k8s.imlc.tech:30649 --since 15m --renderer canvas --backend chromium --output ./example --headless true"
   },
   "dependencies": {
     "canvas": "^2.8.0",

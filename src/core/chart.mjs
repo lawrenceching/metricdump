@@ -76,7 +76,7 @@ function renderChart(ele, options, dataSet) {
         },
         yAxis: {
             type: 'value',
-            boundaryGap: ['20%', '20%'],
+            boundaryGap: [0, '20%'],
             axisLabel: {
                 formatter: function (value, index) {
                     switch(unit) {
@@ -89,7 +89,7 @@ function renderChart(ele, options, dataSet) {
                     }
                     return value;
                 }
-            }
+            },
         },
         series: dataSet.map(data => {
             return {
@@ -103,7 +103,7 @@ function renderChart(ele, options, dataSet) {
                 },
                 yAxis: {
                     type: 'value',
-                    boundaryGap: [0, '100%']
+                    boundaryGap: [0, '100%'],
                 },
                 data: data.values
             };

@@ -30,7 +30,7 @@ program.version('0.0.1')
     .option('--promql <query>', 'The PromQL to query')
     .option('--unit <unit>', 'The unit for the metric.')
     .option('--headless <headless>', 'Launch Chromium in headless mode or not')
-    .option('--metrics <yaml>', 'Path to the metric file which defined a series of metrics need to be recorded')
+    .option('--metrics <yaml1,yaml2,...>', 'List of paths to the metric file which defined a series of metrics need to be recorded')
     .option('--prometheus <url>', 'The url to Prometheus', 'http://localhost:9090');
 
 
@@ -50,19 +50,27 @@ if (promql === undefined && metricYaml === undefined) {
     assert.fail("No metric specified. You should set either --promql or --metrics. Use --help to see more detail.")
 }
 
-let metrics;
+let metrics = [];
 if (promql !== undefined) {
     const unit = options.unit || 'default';
-    metrics = [{
+    metrics.push({
         // - query: rate(node_cpu_seconds_total[10m])
         // title: Node CPU Usage
         // unit: Percent (0.0-1.0)
         query: promql,
         title: title,
         unit
-    }]
+    });
 } else {
-    metrics = yaml.load(fs.readFileSync(metricYaml), 'utf8');
+    metricYaml
+        .split(',')
+        .map(f => f.trim())
+        .map(f => yaml.load(fs.readFileSync(f), 'utf8'))
+        .forEach(content => {
+            for (let c of content) {
+                metrics.push(c);
+            }
+        })
 }
 
 
