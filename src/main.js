@@ -15,11 +15,11 @@ const info = debug('info');
 debug.enable('info,' + process.env['DEBUG']);
 const program = commander.program;
 
-program.version('0.0.1')
+program.version('1.0.0')
     .description('A tool to take snapshot of Prometheus metric and save as SVG/PNG')
     .option('--since <since>', 'Record metric since last XXX s/m/h/d (seconds/minutes/hours/days), default in seconds')
-    .option('--start <time>', 'Record metric started from the given time, default in seconds')
-    .option('--end <time>', 'Record metric end at the given time')
+    .option('--start <time>', 'Record metric started from the given time, in format yyyy-MM-ddThh:mm:ss')
+    .option('--end <time>', 'Record metric end at the given time, in format yyyy-MM-ddThh:mm:ss')
     .option('--width <px>', 'The width of the generated SVG or PNG file', '1024')
     .option('--height <px>', 'The height of the generated SVG or PNG file', '600')
     .option('--backend <title>', 'Backend of renderer. Supports node-canvas or chromium')
@@ -34,12 +34,11 @@ program.version('0.0.1')
     .option('--metrics <yaml1,yaml2,...>', 'List of paths to the metric file which defined a series of metrics need to be recorded')
     .option('--prometheus <url>', 'The url to Prometheus', 'http://localhost:9090');
 
-
 program.parse(process.argv);
 
 const options = program.opts();
 
-const {start, end, prometheus, width, height, promql, output, renderer, step, headless} = options;
+const {prometheus, width, height, promql, output, renderer, step, headless} = options;
 const since = options.since !== undefined ? toSeconds(options.since) : undefined;
 const title = options.title || 'Prometheus Metric';
 const backend = options.backend || 'chromium';
@@ -47,6 +46,9 @@ const metricYaml = options.metrics;
 const showLegend = options.showLegend === null || options.showLegend === undefined ? true : options.showLegend === 'true';
 
 log(`Execute program with options: ${JSON.stringify(options, null, 4)}`)
+
+const startInUnixSeconds = new Date(options.start).getTime() / 1000;
+const endInUnixSeconds = new Date(options.end).getTime() / 1000;
 
 if (promql === undefined && metricYaml === undefined) {
     assert.fail("No metric specified. You should set either --promql or --metrics. Use --help to see more detail.")
@@ -92,9 +94,9 @@ function createRootElement(renderer) {
 }
 
 function calculateStep() {
-    let _start = start;
-    let _end = end;
-    if (since !== null) {
+    let _start = startInUnixSeconds;
+    let _end = endInUnixSeconds;
+    if (since !== null && since !== undefined) {
         _end = Date.now() / 1000;
         _start = _end - since;
     }
@@ -116,8 +118,8 @@ for (let metric of metrics) {
             step: step || calculateStep()
         })
     } else {
-        log(`queryRange: _promql=${_promql}, start=${start} end=${end}`)
-        dataSet = await prometheusClient.queryRange(_promql, start, end, {
+        log(`queryRange: _promql=${_promql}, start=${startInUnixSeconds} end=${endInUnixSeconds}`)
+        dataSet = await prometheusClient.queryRange(_promql, startInUnixSeconds, endInUnixSeconds, {
             step: step || calculateStep()
         })
     }

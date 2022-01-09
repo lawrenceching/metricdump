@@ -2,6 +2,7 @@ FROM  lawrenceching/nodejs16_chromium
 
 ENV PROMETHEUS="http://localhost:9090"
 ENV START="1637219314"
+
 ENV END="1637478514"
 ENV OUTPUT="/tmp/metrics"
 ENV STEP="1050"

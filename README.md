@@ -32,6 +32,28 @@ npm install
 npm install --registry=https://registry.npmmirror.com
 ```
 
+```bash
+Options:
+  -V, --version                output the version number
+  --since <since>              Record metric since last XXX s/m/h/d (seconds/minutes/hours/days), default in seconds
+  --start <time>               Record metric started from the given time, in format yyyy-MM-ddThh:mm:ss
+  --end <time>                 Record metric end at the given time, in format yyyy-MM-ddThh:mm:ss
+  --width <px>                 The width of the generated SVG or PNG file (default: "1024")
+  --height <px>                The height of the generated SVG or PNG file (default: "600")
+  --backend <title>            Backend of renderer. Supports node-canvas or chromium
+  --title <title>              The title of graph
+  --output <title>             The output SVG/PNG file path (default: "./output")
+  --renderer <title>           The renderer, svg or canvas (default: "canvas")
+  --step <step>                The step for query Prometheus metric
+  --promql <query>             The PromQL to query
+  --unit <unit>                The unit for the metric.
+  --showLegend <boolean>       Display legend
+  --headless <headless>        Launch Chromium in headless mode or not
+  --metrics <yaml1,yaml2,...>  List of paths to the metric file which defined a series of metrics need to be recorded
+  --prometheus <url>           The url to Prometheus (default: "http://localhost:9090")
+  -h, --help                   display help for command
+  ```
+
 ##### Save one metric as SVG
 
 ```bash
@@ -48,7 +70,7 @@ node src/main.js \
 
 ```bash
 node src/main.js \
-  --metrics ./example/metrics.yaml \
+  --metrics ./example/metrics-http.yaml \
   --prometheus https://prometheus.demo.do.prometheus.io \
   --since 7d \
   --renderer svg \
@@ -61,12 +83,11 @@ node src/main.js \
 # Run prometheus-snapshot container to save metrics, files will be stored at /tmp/metrics inside the container
 docker run \
   --name prometheus-snapshot \
-  --mount type=bind,source="$(pwd)"/example/metrics.yaml,target=/etc/prometheus-snaphost/metrics.yaml,readonly \
-  --network container-network \
+  --mount type=bind,source="$(pwd)"/example/metrics-http.yaml,target=/etc/prometheus-snaphost/metrics-http.yaml,readonly \
   -e DEBUG="main" \
   -e PROMETHEUS=https://prometheus.demo.do.prometheus.io \
-  -e START="1637219314" \
-  -e END="1637478514" \
+  -e START="2022-01-01T00:00:00" \
+  -e END="2022-01-02T10:30:00" \
   prometheus-snapshot
 
 # Get container id
