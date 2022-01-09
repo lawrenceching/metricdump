@@ -20,9 +20,9 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag lawrenceching/prometheus-snapshot:$(date '+%Y-%m-%d')
+      run: docker build . --file Dockerfile --tag lawrenceching/metricdump:$(date '+%Y-%m-%d')
     - name: Docker Push
       run: |
-        docker push lawrenceching/prometheus-snapshot:$(date '+%Y-%m-%d')
-        docker tag lawrenceching/prometheus-snapshot:$(date '+%Y-%m-%d') lawrenceching/prometheus-snapshot:latest
-        docker push lawrenceching/prometheus-snapshot:latest
+        docker push lawrenceching/metricdump:$(date '+%Y-%m-%d')
+        docker tag lawrenceching/metricdump:$(date '+%Y-%m-%d') lawrenceching/metricdump:latest
+        docker push lawrenceching/metricdump:latest
