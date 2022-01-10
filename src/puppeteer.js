@@ -5,12 +5,22 @@ import fs from 'fs';
 import {join} from "path";
 
 function readEchartOptionBuilderAsString() {
-    const content = fs.readFileSync('./src/core/echart-option-builder.js', 'utf8')
-    const startLabel = '// START';
-    const endLabel = '// END';
-    const startAt = content.indexOf(startLabel)
-    const endAt = content.indexOf(endLabel)
-    return content.substring(startAt + startLabel.length, endAt)
+
+    const paths = ['./core/echart-option-builder.js',
+        './src/core/echart-option-builder.js'];
+    for (const path of paths) {
+        if(fs.existsSync(path)) {
+            const content = fs.readFileSync(path, 'utf8')
+            const startLabel = '// START';
+            const endLabel = '// END';
+            const startAt = content.indexOf(startLabel)
+            const endAt = content.indexOf(endLabel)
+            return content.substring(startAt + startLabel.length, endAt)
+        }
+    }
+
+    throw new Error('No echart-option-builder.js file found in ' + paths);
+
 }
 /**
  *

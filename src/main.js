@@ -140,6 +140,10 @@ for (let metric of metrics) {
     };
 
 
+    if(!fs.existsSync(output)) {
+        fs.mkdirSync(output, { recursive: true });
+    }
+
     if (backend === 'chromium') {
         const data = await renderByChromium(chartOptions, dataSet);
 

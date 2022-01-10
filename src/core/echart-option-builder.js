@@ -58,7 +58,7 @@ function buildEchartOption(dataSet, options) {
             splitNumber: 5,
             axisLabel: {
                 formatter: function (value, index) {
-                    return DateTime.fromMillis(value).toFormat('yyyy-MM-dd\nMM:hh:ss')
+                    return DateTime.fromMillis(value).toFormat('yyyy-MM-dd\nhh:mm:ss')
                 }
             }
         },
