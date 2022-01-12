@@ -1,4 +1,5 @@
 // START
+
 function buildEchartOption(dataSet, options) {
     const {
         title,
@@ -11,6 +12,43 @@ function buildEchartOption(dataSet, options) {
         output,
         showLegend
     } = options;
+
+    const SUPPORTED_UNITS = {
+        percent_0_to_1: 'Percent (0.0-1.0)',
+        second: 'second',
+        bytes: 'bytes'
+    };
+
+
+    const formatters = {};
+    formatters[SUPPORTED_UNITS.bytes] = (value) => {
+        const b = 1;
+        const kb = 1000 * b;
+        const mb = 1000 * kb;
+        const gb = 1000 * mb;
+        const tb = 1000 * gb;
+        if(value > tb) {
+            return `${(value / tb).toFixed(2)} TB`;
+        }
+        if(value > gb) {
+            return `${(value / gb).toFixed(2)} GB`;
+        }
+        if(value > mb) {
+            return `${(value / mb).toFixed(2)} MB`;
+        }
+        if(value > kb) {
+            return `${(value / kb).toFixed(2)} KB`;
+        }
+        return `${(value / kb).toFixed(2)} B`;
+    };
+
+    formatters[SUPPORTED_UNITS.percent_0_to_1] = (value) => {
+        return `${(parseFloat(value) * 100).toFixed(2)}%`;
+    }
+
+    formatters[SUPPORTED_UNITS.second] = (value) => {
+        return `${value * 1000}ms`
+    }
 
     const option = {
         tooltip: {
@@ -67,15 +105,8 @@ function buildEchartOption(dataSet, options) {
             boundaryGap: [0, '20%'],
             axisLabel: {
                 formatter: function (value, index) {
-                    switch (unit) {
-                        case SUPPORTED_UNITS.percent_0_to_1: {
-                            return `${(parseFloat(value) * 100).toFixed(2)}%`;
-                        }
-                        case SUPPORTED_UNITS.second: {
-                            return `${value * 1000}ms`
-                        }
-                    }
-                    return value;
+                    const formatter = !!formatters[unit] ? formatters[unit] : (v) => v;
+                    return formatter(value);
                 }
             }
         },

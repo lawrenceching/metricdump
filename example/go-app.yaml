@@ -1,0 +1,4 @@
+- query: sum(go_memstats_heap_inuse_bytes) by (instance)
+  title: go_memstats_heap_inuse_bytes
+  unit: bytes
+
